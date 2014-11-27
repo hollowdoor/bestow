@@ -35,7 +35,7 @@ if(divvy.running === 'node'){
             var root = (options.root) ? options.root : '/',
                 basename = path.basename(req.url),
                 dirname = path.dirname(url.parse(req.url).pathname),
-                modulename = path.join(dirname, thisname);
+                modulename = path.join(pathname, thisname);
             
             if(thisname !== basename)
                 return false;
