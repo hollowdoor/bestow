@@ -3,7 +3,7 @@ var running = null,
     divvy = {},
     stack = [];
 
-var fs, path, url; //node specific
+
 
 function establishEnv(){
     if(typeof module !== 'undefined' && module.exports){
@@ -17,24 +17,26 @@ function establishEnv(){
 
 establishEnv();
 
-if(divvy.running === 'node'){
-    fs = require('fs');
-    path = require('path');
-    url = require('url');
-}
 
+divvy.createSender = function(){};
 divvy.toMiddleWare = function(){};
+
 if(divvy.running === 'node'){
-    divv.createSender = function(name){
+    
+    var fs = require('fs'),
+        path = require('path'),
+        url = require('url');
+    
+    divvy.createSender = function(thisname, pathname){
         
+        pathname = pathname || request.resolve(thisname);
         return function(req, res, options){
-            options = options || {};
             
             var root = (options.root) ? options.root : '/',
                 basename = path.basename(req.url),
                 dirname = path.dirname(url.parse(req.url).pathname),
-                modulename = path.join(__dirname, thisname);
-        
+                modulename = path.join(dirname, thisname);
+            
             if(thisname !== basename)
                 return false;
             if(root !== dirname)
@@ -54,24 +56,19 @@ if(divvy.running === 'node'){
         };
     };
     
-    divvy.toMiddleWare = function(name){
-        return function(){
+    divvy.createMiddleWare = function(name, getdirname){
+        
+        var sender = divvy.createSender(name, getdirname);
+        
+        return function(options){
             
             return function(req, res, next){
-                var basename = path.basename(req.url);
-                var modulename = require.resolve(name);
                 
-                if(moduleName !== basename){
-                    return next();
-                }
+                var sent = sender(req, res, options);
                 
-                fs.readFile(modulename, 'utf8', function(err, text){
-                    if(err) return next(err);
-                    if(!text) return next();
-                    res.send(text);
-                });
+                if(!sent)
+                    next();
             };
-        
         };
     };
 }
