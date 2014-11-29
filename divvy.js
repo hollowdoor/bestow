@@ -21,6 +21,8 @@ establishEnv();
 
 divvy.createSender = function(){};
 divvy.toMiddleWare = function(){};
+divvy.send = function(){};
+divvy.middleWare = function(){};
 
 if(divvy.running === 'node'){
     
@@ -29,6 +31,9 @@ if(divvy.running === 'node'){
         url = require('url');
     
     divvy.createSender = function(thisname, pathname){
+        
+        if(divvy.running !== 'node')
+            return function(){};
         
         pathname = pathname || request.resolve(thisname);
         return function(req, res, options){
@@ -59,6 +64,9 @@ if(divvy.running === 'node'){
     
     divvy.createMiddleWare = function(name, getdirname){
         
+        if(divvy.running !== 'node')
+            return function(){};
+        
         var sender = divvy.createSender(name, getdirname);
         
         return function(options){
@@ -72,12 +80,16 @@ if(divvy.running === 'node'){
             };
         };
     };
+    
+    divvy.send = divvy.createSender('divvy.js', __dirname);
+    divvy.middleWare = divvy.createMiddleWare('divvy.js', __dirname);
 }
+
 
 switch(divvy.running){
     case 'node': module.exports.divvy = divvy; break;
-    case 'browser': window.divvy = divvy; break;
+    case 'browser': _global.divvy = divvy; break;
 }
 
 
-})(this);
+})(GLOBAL || this);
