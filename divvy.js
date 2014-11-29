@@ -1,4 +1,5 @@
 (function(_global){
+"use strict";
 var running = null,
     divvy = {},
     stack = [];
