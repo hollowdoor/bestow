@@ -71,8 +71,10 @@ if(divvy.running === 'node'){
             var readstream = fs.createReadStream(modulename);
             
             res.setHeader('content-type', 'application/javascript');
+            
             readstream.pipe(res).on('error', function(e){
                 res.writeHead(500);
+                
                 if(!options.errorPage){
                     res.end('500 Internal server error.');
                 }else{
@@ -145,7 +147,7 @@ if(divvy.running === 'node'){
 
 
 switch(divvy.running){
-    case 'node': module.exports.divvy = divvy; break;
+    case 'node': module.exports = divvy; break;
     case 'browser': _global.divvy = divvy; break;
 }
 
