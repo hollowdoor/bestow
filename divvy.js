@@ -58,10 +58,6 @@ if(divvy.running === 'node'){
         return function(req, res, options){
             
             options = options || {};
-            fn = options.onError || function(err, req, res){
-                res.writeHead(500);
-                res.end('500 internal server error.');
-            };
             
             for(var n in opts){
                 if(!n in options){
@@ -73,59 +69,44 @@ if(divvy.running === 'node'){
                 basename = path.basename(req.url),
                 dirname = path.dirname(url.parse(req.url).pathname),
                 modulename = path.join(pathname, thisname),
-                success = {success: false};
+                sender = {sending: false};
             
-            
-            
-            success.basename = basename;
-            success.module = thisname;
-            success.moduleName = thisname;
-            success.thisname = thisname;
-            success.root = root;
-            success.dirname = dirname;
-            success.method = req.method;
-            success.error = null;
+            sender.basename = basename;
+            sender.module = thisname;
+            sender.moduleName = thisname;
+            sender.thisname = thisname;
+            sender.root = root;
+            sender.dirname = dirname;
+            sender.method = req.method;
             
             if(req.method !== 'GET')
-                return success;
+                return sender;
             
             if(thisname !== basename)
-                return success;
+                return sender;
             
             if(root !== dirname)
-                return success;
+                return sender;
             
             var readstream = fs.createReadStream(modulename);
+            
+            sender.readStream = readstream;
             
             res.setHeader('content-type', 'application/javascript');
             
             if(options.before)
-                options.before(success);
+                options.before(sender);
             
-            readstream.pipe(res).on('error', function(e){
-                
-                res.writeHead(500);
-                
-                if(!options.errorPage){
-                    res.end('500 Internal server error.');
-                }else{
-                    fs.readFile(options.errorPage, 'utf8' , function(err, text){
-                        if(err){
-                            options.onError(err, req, res);
-                    });
-                }
-                
-                console.log(thisname+' javascript stream failed. 500 error was sent.');
-            });
+            if(options.after){
+                readstream.on('end', function(){
+                    options.after(sender);
+                });
+            }
             
-            success.readStream = readstream;
-            success.response = res;
+            readstream.pipe(res);
             
-            if(options.after)
-                options.after(success);
-            
-            success.success = true;
-            return success;
+            sender.sending = true;
+            return sender;
                 
         };
     };
@@ -148,7 +129,7 @@ if(divvy.running === 'node'){
                 
                 var sent = sender(req, res, options);
                 
-                if(!sent.success)
+                if(!sent.sending)
                     next();
             };
         };
@@ -171,11 +152,11 @@ if(divvy.running === 'node'){
                 console.log(e.message);
             }
             
-            console.log(testing.module+'.success = ', testing.success);
+            console.log(testing.moduleName+'.success = ', testing.sending);
             
-            if(!testing.success){
+            if(!testing.sending){
                 
-                console.log(testing.module+'.success = ', testing.success);
+                console.log(testing.moduleName+'.success = ', testing.sending);
                 cb(req, res);
             }
         });
