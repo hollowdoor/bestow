@@ -31,8 +31,67 @@ Node has it's special code. This special code relies on compiled C++ to accompli
 
 Node has a lot of modules that can work in the browser already. The purpose of Divvy isn't to support those modules. Maybe in the future there can be a flag that a developer can set to allow Divvy support, or some other method can be used to make modules compatible.
 
+These problems can be solved in one's own modules using ajax, or sockets, but there's no guarantee that any publicly available modules will try those solutions, or even be using Divvy.
+
 For now Divvy can be used to load scripts that are modules using Divvy methods. The documentation explains how this can be accompished for a module.
 
 ## Documentation
+
+### Making a script ready for Divvy
+
+You can just use the Divvy methods to make a script work browser side, but there are some things you can do to make a script work better. Here are those things.
+
+Wrap your whole script in a self invoking function that looks like this.
+
+```
+(function(_global){
+"use strict";
+/*My code here*/
+}(GLOBAL /*node's global*/ || window));
+```
+
+Use `"use strict";` in your self invoking function if you like what it provides. I suggest using it because it's helpful in many situations.
+
+**Handling exports properly.**
+
+You're going to want to export, and send your code to the browser so you want to do this. **Divvy does nothing to help your objects be exposed to the environment so you have to do this yourself.**
+
+```
+(function(_global){
+"use strict";
+if(typeof module !== 'undefined' && module.exports){
+    var divvy = require('divvy');
+}
+
+var MyObject = {};
+/*My code here*/
+//Check if we're in node.
+if(divvy.running === 'node'){
+    module.exports = MyObject;
+}else{
+    //Attache my object to the browser instead.
+    window.MyObject = MyObject
+}
+}(GLOBAL /*node's global*/ || window));
+```
+
+`divvy.running` is redundant because of the first module check, and you'd have to send divvy to the browser to use it so you can just use your own check.
+
+(function(_global, usingNode){
+"use strict";
+if(usingNode){
+    var divvy = require('divvy');
+}
+
+var MyObject = {};
+/*My code here*/
+//Check if we're in node.
+if(usingNode){
+    module.exports = MyObject;
+}else{
+    //Attache my object to the browser instead.
+    window.MyObject = MyObject
+}
+}(GLOBAL /*node's global*/ || window, (typeof module !== 'undefined' && module.exports));
 
 
