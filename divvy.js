@@ -58,26 +58,40 @@ if(divvy.running === 'node'){
             
             options = options || {};
             
+            for(var n in opts){
+                if(!n in options){
+                    options[n] = opts[n];
+                }
+            }
+            
             var root = (options.root) ? options.root : '/',
                 basename = path.basename(req.url),
                 dirname = path.dirname(url.parse(req.url).pathname),
                 modulename = path.join(pathname, thisname),
                 success = {success: false};
             
+            
+            
             success.basename = basename;
             success.module = thisname;
             success.thisname = thisname;
             success.root = root;
             success.dirname = dirname;
+            success.method = req.method;
             
-            if(thisname !== basename)
+            if(req.method !== 'GET')
                 return success;
-            if(root !== dirname)
+            else if(thisname !== basename)
+                return success;
+            else if(root !== dirname)
                 return success;
             
             var readstream = fs.createReadStream(modulename);
             
             res.setHeader('content-type', 'application/javascript');
+            
+            if(options.before)
+                options.before();
             
             readstream.pipe(res).on('error', function(e){
                 res.writeHead(500);
@@ -94,13 +108,16 @@ if(divvy.running === 'node'){
                 console.log(thisname+' javascript stream failed. 500 error was sent.');
             });
             
+            if(options.after)
+                options.after();
+            
             success.success = true;
             return success;
                 
         };
     };
     
-    divvy.createMiddleWare = function(name, getdirname){
+    divvy.createMiddleware = function(name, getdirname){
         
         if(divvy.running !== 'node')
             return function(){};
@@ -125,7 +142,7 @@ if(divvy.running === 'node'){
     };
     
     divvy.send = divvy.createSender('divvy.js', __dirname);
-    divvy.middleWare = divvy.createMiddleWare('divvy.js', __dirname);
+    divvy.middleWare = divvy.createMiddleware('divvy.js', __dirname);
     
     divvy.testServer = function(test, cb){
         
