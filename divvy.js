@@ -24,6 +24,7 @@ divvy.toMiddleWare = function(){
 divvy.send = function(){};
 divvy.middleWare = function(){};
 divvy.testServer = function(){};
+divvy.proxy = function(){};
 
 if(divvy.running === 'node'){
     
@@ -81,9 +82,11 @@ if(divvy.running === 'node'){
             
             if(req.method !== 'GET')
                 return success;
-            else if(thisname !== basename)
+            
+            if(thisname !== basename)
                 return success;
-            else if(root !== dirname)
+            
+            if(root !== dirname)
                 return success;
             
             var readstream = fs.createReadStream(modulename);
@@ -91,7 +94,7 @@ if(divvy.running === 'node'){
             res.setHeader('content-type', 'application/javascript');
             
             if(options.before)
-                options.before();
+                options.before(success);
             
             readstream.pipe(res).on('error', function(e){
                 
@@ -111,7 +114,7 @@ if(divvy.running === 'node'){
             });
             
             if(options.after)
-                options.after();
+                options.after(success);
             
             success.success = true;
             return success;
@@ -168,6 +171,89 @@ if(divvy.running === 'node'){
                 cb(req, res);
             }
         });
+    };
+    
+    divvy.proxy = function(options){
+        
+        var http = require('http'),
+            fs = require('fs'),
+            path = require('path'),
+            mime = require('mime'),
+            stackSave = [],
+            errorList = [];
+        
+        var fn = function(req, res){
+            
+            req.errorList = [];
+            
+            var stack = stackSave.concat([]);
+            
+            stack.push(function(req, res, next){
+                http.request(options).pipe(res);
+            });
+            
+            var index = -1;
+            
+            var next = function(err){
+                ++index;
+                                
+                if(index < stack.length){
+                    
+                    if(err && stack[index].length === 4)
+                        stack[index](err, req, res, next);
+                    else if(stack[index].length === 3)
+                        stack[index](req, res, next);
+                }
+                
+            };
+            
+            next();
+        };
+        
+        fn.use function(fn){
+            if(fn.handle)
+                stackSave.push(fn.handle);
+            else
+                stackSave.push(fn);
+        };
+        
+        fn.staticFolder = function(name, actualname){
+            
+            actualname = actualname || name;
+            
+            return function(req, res, next){
+                
+                var pathname = url.parse(req.url).pathname,
+                    dirname = path.dirname(pathname),
+                    filename = path.join(actualname, path.basename(pathname));
+                
+                if(req.method !== 'GET')
+                    return next();
+                if(dirname !== name)
+                    return next();
+                
+                fs.exists(filename, function(exists){
+                    
+                    if(!exists)
+                        next();
+                    
+                    var mimetype = mime.lookup(filename);
+                        
+                    res.setHeader('content-type', mimetype);
+                    
+                    var readstream = fs.createReadStream(filename);
+                    
+                    readstream.pipe(res).on('error', function(e){
+                
+                        res.writeHead(500);
+                        res.end();
+                    });
+                }
+            };
+        };
+        
+        return fn;
+        
     };
 }
 
