@@ -15,10 +15,15 @@ function establishEnv(){
 establishEnv();
 
 
-divvy.createSender = function(){};
-divvy.toMiddleWare = function(){};
+divvy.createSender = function(){
+    return function(){};
+};
+divvy.toMiddleWare = function(){
+    return function(){};
+};
 divvy.send = function(){};
 divvy.middleWare = function(){};
+divvy.testServer = function(){};
 
 if(divvy.running === 'node'){
     
@@ -27,6 +32,16 @@ if(divvy.running === 'node'){
         url = require('url');
     
     divvy.createSender = function(thisname, pathname){
+        
+        var mname = path.join(pathname, thisname);
+        
+        fs.exists(mname, function(exists){
+            if(!exists){
+                throw new Error('divvy.createSender Error: arguments resolve to '+
+                mname+' which does not exist.');
+            }
+        });
+        
         
         if(divvy.running !== 'node')
             return function(){};
@@ -42,10 +57,12 @@ if(divvy.running === 'node'){
                 modulename = path.join(pathname, thisname),
                 success = {success: false};
             
-            success.basname = basename;
+            success.basename = basename;
             success.module = thisname;
+            success.thisname = thisname;
             success.root = root;
             success.dirname = dirname;
+            
             if(thisname !== basename)
                 return success;
             if(root !== dirname)
@@ -56,7 +73,15 @@ if(divvy.running === 'node'){
             res.setHeader('content-type', 'application/javascript');
             readstream.pipe(res).on('error', function(e){
                 res.writeHead(500);
-                res.end('500 Internal server error.');
+                if(!options.errorPage){
+                    res.end('500 Internal server error.');
+                }else{
+                    fs.readFile(options.errorPage, 'utf8' , function(err, text){
+                        if(err)
+                            console.log(err); return;
+                        res.end(text);
+                    });
+                }
                 console.log(thisname+' javascript stream failed. 500 error was sent.');
             });
             
@@ -71,7 +96,12 @@ if(divvy.running === 'node'){
         if(divvy.running !== 'node')
             return function(){};
         
-        var sender = divvy.createSender(name, getdirname);
+        try{
+            var sender = divvy.createSender(name, getdirname);
+        }catch(e){
+            throw new Error('divvy.createMiddleWare Error: Can not create sender.');
+            console.log(e.message);
+        }
         
         return function(options){
             
@@ -79,7 +109,7 @@ if(divvy.running === 'node'){
                 
                 var sent = sender(req, res, options);
                 
-                if(!sent)
+                if(!sent.success)
                     next();
             };
         };
@@ -87,6 +117,30 @@ if(divvy.running === 'node'){
     
     divvy.send = divvy.createSender('divvy.js', __dirname);
     divvy.middleWare = divvy.createMiddleWare('divvy.js', __dirname);
+    
+    divvy.testServer = function(test, cb){
+        
+        var http = require('http'),
+            fs = require('fs'),
+            path = require('path');
+        
+        return http.createServer(function(req, res){
+            
+            try{
+                var testing = test.send(req, res);
+            }catch(e){
+                console.log(e.message);
+            }
+            
+            console.log(testing.module+'.success = ', testing.success);
+            
+            if(!testing.success){
+                
+                console.log(testing.module+'.success = ', testing.success);
+                cb(req, res);
+            }
+        });
+    };
 }
 
 
