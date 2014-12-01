@@ -94,6 +94,7 @@ if(divvy.running === 'node'){
                 options.before();
             
             readstream.pipe(res).on('error', function(e){
+                
                 res.writeHead(500);
                 
                 if(!options.errorPage){
@@ -105,6 +106,7 @@ if(divvy.running === 'node'){
                         res.end(text);
                     });
                 }
+                
                 console.log(thisname+' javascript stream failed. 500 error was sent.');
             });
             
