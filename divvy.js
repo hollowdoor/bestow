@@ -1,18 +1,14 @@
 (function(_global){
 "use strict";
-var running = null,
-    divvy = {},
-    stack = [];
+var divvy = {};
 
 
 
 function establishEnv(){
     if(typeof module !== 'undefined' && module.exports){
         divvy.running = 'node';
-        _global = GLOBAL;
     }else{
         divvy.running = 'browser';
-        _global = window;
     }
 }
 
@@ -38,15 +34,22 @@ if(divvy.running === 'node'){
         pathname = pathname || request.resolve(thisname);
         return function(req, res, options){
             
+            options = options || {};
+            
             var root = (options.root) ? options.root : '/',
                 basename = path.basename(req.url),
                 dirname = path.dirname(url.parse(req.url).pathname),
-                modulename = path.join(pathname, thisname);
+                modulename = path.join(pathname, thisname),
+                success = {success: false};
             
+            success.basname = basename;
+            success.module = thisname;
+            success.root = root;
+            success.dirname = dirname;
             if(thisname !== basename)
-                return false;
+                return success;
             if(root !== dirname)
-                return false;
+                return success;
             
             var readstream = fs.createReadStream(modulename);
             
@@ -57,7 +60,8 @@ if(divvy.running === 'node'){
                 console.log(thisname+' javascript stream failed. 500 error was sent.');
             });
             
-            return true;
+            success.success = true;
+            return success;
                 
         };
     };
