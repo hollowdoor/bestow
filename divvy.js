@@ -58,6 +58,10 @@ if(divvy.running === 'node'){
         return function(req, res, options){
             
             options = options || {};
+            fn = options.onError || function(err, req, res){
+                res.writeHead(500);
+                res.end('500 internal server error.');
+            };
             
             for(var n in opts){
                 if(!n in options){
@@ -75,10 +79,12 @@ if(divvy.running === 'node'){
             
             success.basename = basename;
             success.module = thisname;
+            success.moduleName = thisname;
             success.thisname = thisname;
             success.root = root;
             success.dirname = dirname;
             success.method = req.method;
+            success.error = null;
             
             if(req.method !== 'GET')
                 return success;
@@ -104,14 +110,16 @@ if(divvy.running === 'node'){
                     res.end('500 Internal server error.');
                 }else{
                     fs.readFile(options.errorPage, 'utf8' , function(err, text){
-                        if(err)
-                            console.log(err); return;
-                        res.end(text);
+                        if(err){
+                            options.onError(err, req, res);
                     });
                 }
                 
                 console.log(thisname+' javascript stream failed. 500 error was sent.');
             });
+            
+            success.readStream = readstream;
+            success.response = res;
             
             if(options.after)
                 options.after(success);
@@ -173,88 +181,6 @@ if(divvy.running === 'node'){
         });
     };
     
-    divvy.proxy = function(options){
-        
-        var http = require('http'),
-            fs = require('fs'),
-            path = require('path'),
-            mime = require('mime'),
-            stackSave = [],
-            errorList = [];
-        
-        var fn = function(req, res){
-            
-            req.errorList = [];
-            
-            var stack = stackSave.concat([]);
-            
-            stack.push(function(req, res, next){
-                http.request(options).pipe(res);
-            });
-            
-            var index = -1;
-            
-            var next = function(err){
-                ++index;
-                                
-                if(index < stack.length){
-                    
-                    if(err && stack[index].length === 4)
-                        stack[index](err, req, res, next);
-                    else if(stack[index].length === 3)
-                        stack[index](req, res, next);
-                }
-                
-            };
-            
-            next();
-        };
-        
-        fn.use function(fn){
-            if(fn.handle)
-                stackSave.push(fn.handle);
-            else
-                stackSave.push(fn);
-        };
-        
-        fn.staticFolder = function(name, actualname){
-            
-            actualname = actualname || name;
-            
-            return function(req, res, next){
-                
-                var pathname = url.parse(req.url).pathname,
-                    dirname = path.dirname(pathname),
-                    filename = path.join(actualname, path.basename(pathname));
-                
-                if(req.method !== 'GET')
-                    return next();
-                if(dirname !== name)
-                    return next();
-                
-                fs.exists(filename, function(exists){
-                    
-                    if(!exists)
-                        next();
-                    
-                    var mimetype = mime.lookup(filename);
-                        
-                    res.setHeader('content-type', mimetype);
-                    
-                    var readstream = fs.createReadStream(filename);
-                    
-                    readstream.pipe(res).on('error', function(e){
-                
-                        res.writeHead(500);
-                        res.end();
-                    });
-                }
-            };
-        };
-        
-        return fn;
-        
-    };
 }
 
 
