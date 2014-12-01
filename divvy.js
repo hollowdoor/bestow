@@ -31,7 +31,9 @@ if(divvy.running === 'node'){
         path = require('path'),
         url = require('url');
     
-    divvy.createSender = function(thisname, pathname){
+    divvy.createSender = function(thisname, pathname, options){
+        
+        var opts = options || {};
         
         var mname = path.join(pathname, thisname);
         
@@ -46,7 +48,12 @@ if(divvy.running === 'node'){
         if(divvy.running !== 'node')
             return function(){};
         
-        pathname = pathname || request.resolve(thisname);
+        try{
+            pathname = pathname || request.resolve(thisname);
+        }catch(e){
+            throw new Error('divvy.createSender Error: '+thisname+' can not be resolved.');
+        }
+        
         return function(req, res, options){
             
             options = options || {};
