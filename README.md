@@ -1,5 +1,8 @@
 
 # Bestow
+
+Bestow is destributed with an MIT license.
+
 ## Send modules to the browser as code.
 
 **This project is mostly for my personal use. If someone decides that they want to use this module it is publicly available. You can use it at your own risk. For now you should consider this module experimental, and it's interface may change in the future.**
