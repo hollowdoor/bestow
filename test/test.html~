@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="test/testmodule.js"></script>
+</head>
+<body>
+<script>
+mod.success();
+mod.alert();
+</script>
+</body>
+</html>

@@ -1,17 +1,26 @@
-var divvy = require("../divvy.js");
-
+(function(){
+if(typeof module !== 'undefined' && module.exports){
+    var divvy = require("../divvy.js");
+}else{
+    var divvy = {running: 'browser'};
+}
 
 
 var mod = {
-    print: function(res, text){
-        res.end(text);
-    },
     success: function(){
         console.log('Success!');
     }
 };
-console.log(divvy);
-mod.send = divvy.createSender('divvy.js', __dirname);
-mod.middleWare = divvy.createMiddleWare('divvy.js', __dirname);
 
-module.exports = mod;
+if(divvy.running === 'node'){
+    mod.send = divvy.createSender('testmodule.js', __dirname);
+    mod.middleWare = divvy.createMiddleWare('testmodule.js', __dirname);
+
+    module.exports = mod;
+}else{
+    mod.alert = function(){
+        alert('success');
+    };
+    window.mod = mod;
+}
+})();

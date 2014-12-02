@@ -1,38 +1,38 @@
 (function(_global){
 "use strict";
-var divvy = {};
+var bestow = {};
 
 
 
 function establishEnv(){
     if(typeof module !== 'undefined' && module.exports){
-        divvy.running = 'node';
+        bestow.running = 'node';
     }else{
-        divvy.running = 'browser';
+        bestow.running = 'browser';
     }
 }
 
 establishEnv();
 
 
-divvy.createSender = function(){
+bestow.createSender = function(){
     return function(){};
 };
-divvy.toMiddleWare = function(){
+bestow.toMiddleWare = function(){
     return function(){};
 };
-divvy.send = function(){};
-divvy.middleWare = function(){};
-divvy.testServer = function(){};
-divvy.proxy = function(){};
+bestow.send = function(){};
+bestow.middleWare = function(){};
+bestow.testServer = function(){};
+bestow.proxy = function(){};
 
-if(divvy.running === 'node'){
+if(bestow.running === 'node'){
     
     var fs = require('fs'),
         path = require('path'),
         url = require('url');
     
-    divvy.createSender = function(thisname, pathname, options){
+    bestow.createSender = function(thisname, pathname, options){
         
         var opts = options || {};
         
@@ -40,19 +40,19 @@ if(divvy.running === 'node'){
         
         fs.exists(mname, function(exists){
             if(!exists){
-                throw new Error('divvy.createSender Error: arguments resolve to '+
+                throw new Error('bestow.createSender Error: arguments resolve to '+
                 mname+' which does not exist.');
             }
         });
         
         
-        if(divvy.running !== 'node')
+        if(bestow.running !== 'node')
             return function(){};
         
         try{
             pathname = pathname || request.resolve(thisname);
         }catch(e){
-            throw new Error('divvy.createSender Error: '+thisname+' can not be resolved.');
+            throw new Error('bestow.createSender Error: '+thisname+' can not be resolved.');
         }
         
         return function(req, res, options){
@@ -91,6 +91,7 @@ if(divvy.running === 'node'){
             
             var readstream = fs.createReadStream(modulename);
             
+            
             sender.readStream = readstream;
             
             res.setHeader('content-type', 'application/javascript');
@@ -107,20 +108,21 @@ if(divvy.running === 'node'){
             readstream.pipe(res);
             
             sender.sending = true;
-            return sender;
+            
+            return Object.create(sender);
                 
         };
     };
     
-    divvy.createMiddleware = function(name, getdirname){
+    bestow.createMiddleware = function(name, getdirname){
         
-        if(divvy.running !== 'node')
+        if(bestow.running !== 'node')
             return function(){};
         
         try{
-            var sender = divvy.createSender(name, getdirname);
+            var sender = bestow.createSender(name, getdirname);
         }catch(e){
-            throw new Error('divvy.createMiddleWare Error: Can not create sender.');
+            throw new Error('bestow.createMiddleWare Error: Can not create sender.');
             console.log(e.message);
         }
         
@@ -136,12 +138,11 @@ if(divvy.running === 'node'){
         };
     };
     
-    //TODO divvy.createStatic free static server
     
-    divvy.send = divvy.createSender('divvy.js', __dirname);
-    divvy.middleWare = divvy.createMiddleware('divvy.js', __dirname);
+    bestow.send = bestow.createSender('bestow.js', __dirname);
+    bestow.middleWare = bestow.createMiddleware('bestow.js', __dirname);
     
-    divvy.testServer = function(test, cb){
+    bestow.testServer = function(test, cb){
         
         var http = require('http'),
             fs = require('fs'),
@@ -168,9 +169,9 @@ if(divvy.running === 'node'){
 }
 
 
-switch(divvy.running){
-    case 'node': module.exports = divvy; break;
-    case 'browser': _global.divvy = divvy; break;
+switch(bestow.running){
+    case 'node': module.exports = bestow; break;
+    case 'browser': _global.bestow = bestow; break;
 }
 
 

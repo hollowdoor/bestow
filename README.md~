@@ -166,50 +166,6 @@ divvy.createMiddleware has the same signature as divvy.createSender.
 The only difference is the createMiddleware function creates a function that is compatible
 with express, or any middle ware using object that sends request, response, and next variables to middleware.
 
-### Create Middleware
-
-```
-if(usingNode){
-    var divvy = require('divvy');
-}
-
-var myModule = {};
-
-if(usingNode){
-    //A new sender is created.
-    myModule.middleware = divvy.createMiddleware('mymodule.js', __dirname);
-    module.exports = myModule;
-}
 ```
 
-### Use Middleware
-
-```
-var express = require('express')
-    mymodule = require('mymodule.js');
-
-var app = express();
-
-//If a mymodule.js is used in the browser no other gets are used.
-app.use(mymodule.middleware());
-
-app.get('apath', function(req, res){
-    //do something else
-});
-```
-
-In your html file.
-
-```
-<!DOCTYPE html>
-<html>
-<head>
-<script src="mymodule.js"></script>
-</head>
-<body>
-<script>
-//You can use your module script methods, and properties on the client side now.
-</script>
-</body>
-</html>
 ```

@@ -91,6 +91,7 @@ if(divvy.running === 'node'){
             
             var readstream = fs.createReadStream(modulename);
             
+            
             sender.readStream = readstream;
             
             res.setHeader('content-type', 'application/javascript');
@@ -107,7 +108,8 @@ if(divvy.running === 'node'){
             readstream.pipe(res);
             
             sender.sending = true;
-            return sender;
+            
+            return Object.create(sender);
                 
         };
     };
@@ -136,7 +138,6 @@ if(divvy.running === 'node'){
         };
     };
     
-    //TODO divvy.createStatic free static server
     
     divvy.send = divvy.createSender('divvy.js', __dirname);
     divvy.middleWare = divvy.createMiddleware('divvy.js', __dirname);
