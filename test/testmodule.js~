@@ -14,7 +14,7 @@ var mod = {
 
 if(divvy.running === 'node'){
     mod.send = divvy.createSender('testmodule.js', __dirname);
-    mod.middleWare = divvy.createMiddleWare('testmodule.js', __dirname);
+    mod.middleWare = divvy.createMiddleware('testmodule.js', __dirname);
 
     module.exports = mod;
 }else{

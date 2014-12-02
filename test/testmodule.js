@@ -1,8 +1,8 @@
 (function(){
 if(typeof module !== 'undefined' && module.exports){
-    var divvy = require("../divvy.js");
+    var bestow = require("../bestow.js");
 }else{
-    var divvy = {running: 'browser'};
+    var bestow = {running: 'browser'};
 }
 
 
@@ -12,9 +12,9 @@ var mod = {
     }
 };
 
-if(divvy.running === 'node'){
-    mod.send = divvy.createSender('testmodule.js', __dirname);
-    mod.middleWare = divvy.createMiddleware('testmodule.js', __dirname);
+if(bestow.running === 'node'){
+    mod.send = bestow.createSender('testmodule.js', __dirname);
+    mod.middleWare = bestow.createMiddleware('testmodule.js', __dirname);
 
     module.exports = mod;
 }else{

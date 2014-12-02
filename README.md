@@ -1,10 +1,10 @@
 
-# Divvy
+# Bestow
 ## Send modules to the browser as code.
 
 **This project is mostly for my personal use. If someone decides that they want to use this module it is publicly available. You can use it at your own risk. For now you should consider this module experimental, and it's interface may change in the future.**
 
-**Being that Divvy serves a purpose shared by tools like Browserfiy it will work only in certain situations, and may not work for your use case. Divvy is not meant to replace other tools. You should use what fits your use case, what works, or what you like to use. Divvy is just another option.**
+**Being that bestow serves a purpose shared by tools like Browserfiy it will work only in certain situations, and may not work for your use case. bestow is not meant to replace other tools. You should use what fits your use case, what works, or what you like to use. bestow is just another option.**
 
 ## Explanation
 
@@ -23,23 +23,23 @@ I've grappled with the idea of using scripts both server side, and client side. 
 
 Some of the above are non-solutions. Others are solutions that are used frequently enough to almost be standard/best practices. I'll let you decide which is which.
 
-Divvy is a module that fulfills that need for reducing repetition for what seems common methods used to accomplish browser, or server compatibilty. It brings it's interface to the module, and application level to accompish this.
+Bestow is a module that fulfills that need for reducing repetition for what seems common methods used to accomplish browser, or server compatibilty. It brings it's interface to the module, and application level to accompish this.
 
 ## A Warning
 
-Node has it's special code. This special code relies on compiled C++ to accomplish what javascript can't do. If a module relies on those C++ codes it will not work with Divvy. You should see undefined errors for those modules that do use C++. In some cases you may be able to replace those modules with a paritally compatible browser implementaion.
+Node has it's special code. This special code relies on compiled C++ to accomplish what javascript can't do. If a module relies on those C++ codes it will not work with bestow. You should see undefined errors for those modules that do use C++. In some cases you may be able to replace those modules with a paritally compatible browser implementaion.
 
-Node has a lot of modules that can work in the browser already. The purpose of Divvy isn't to support those modules. Maybe in the future there can be a flag that a developer can set to allow Divvy support, or some other method can be used to make modules compatible.
+Node has a lot of modules that can work in the browser already. The purpose of bestow isn't to support those modules. Maybe in the future there can be a flag that a developer can set to allow bestow support, or some other method can be used to make modules compatible.
 
-These problems can be solved in one's own modules using ajax, or sockets, but there's no guarantee that any publicly available modules will try those solutions, or even be using Divvy.
+These problems can be solved in one's own modules using ajax, or sockets, but there's no guarantee that any publicly available modules will try those solutions, or even be using bestow.
 
-For now Divvy can be used to load scripts that are modules using Divvy methods. The documentation explains how this can be accompished for a module.
+For now bestow can be used to load scripts that are modules using bestow methods. The documentation explains how this can be accompished for a module.
 
 
 
-## Making a script ready for Divvy
+## Making a script ready for bestow
 
-You can just use the Divvy methods to make a script work browser side, but there are some things you can do to make a script work better. Here are those things.
+You can just use the bestow methods to make a script work browser side, but there are some things you can do to make a script work better. Here are those things.
 
 Wrap your whole script in a self invoking function that looks like this.
 
@@ -54,19 +54,19 @@ Use `"use strict";` in your self invoking function if you like what it provides.
 
 **Handling exports properly.**
 
-You're going to want to export, and send your code to the browser so you want to do this. **Divvy does nothing to help your objects be exposed to the environment so you have to do this yourself. Divvy is for making modules static.**
+You're going to want to export, and send your code to the browser so you want to do this. **bestow does nothing to help your objects be exposed to the environment so you have to do this yourself. bestow is for making modules static.**
 
 ```
 (function(_global){
 "use strict";
 if(typeof module !== 'undefined' && module.exports){
-    var divvy = require('divvy');
+    var bestow = require('bestow');
 }
 
 var MyObject = {};
 /*My code here*/
 //Check if we're in node.
-if(divvy.running === 'node'){
+if(bestow.running === 'node'){
     module.exports = MyObject;
 }else{
     //Attache my object to the browser instead.
@@ -75,13 +75,13 @@ if(divvy.running === 'node'){
 }(GLOBAL /*node's global*/ || window));
 ```
 
-`divvy.running` is redundant because of the first module check, and you'd have to send divvy to the browser to use it so you can just use your own check.
+`bestow.running` is redundant because of the first module check, and you'd have to send bestow to the browser to use it so you can just use your own check.
 
 ```
 (function(_global, usingNode){
 "use strict";
 if(usingNode){
-    var divvy = require('divvy');
+    var bestow = require('bestow');
 }
 
 var MyObject = {};
@@ -98,25 +98,25 @@ if(usingNode){
 
 ## API Documentation
 
-### divvy.createSender
+### bestow.createSender
 
-`divvy.createSender(name[string], dirname[__dirname|string], options[{}]);`
+`bestow.createSender(name[string], dirname[__dirname|string], options[{}]);`
 
-divvy.createSender produces a function that can be used with the request, and response variables
+bestow.createSender produces a function that can be used with the request, and response variables
 created by a node server.
 
 ###Creating a sender
 
 ```
 if(usingNode){
-    var divvy = require('divvy');
+    var bestow = require('bestow');
 }
 
 var myModule = {};
 
 if(usingNode){
     //A new sender is created.
-    myModule.send = divvy.createSender('mymodule.js', __dirname);
+    myModule.send = bestow.createSender('mymodule.js', __dirname);
     module.exports = myModule;
 }
 ```
@@ -157,11 +157,11 @@ In your html file.
 </html>
 ```
 
-### divvy.createMiddleWare
+### bestow.createMiddleWare
 
-`divvy.createMiddleware(name[string], dirname[__dirname|string], options[{}])`
+`bestow.createMiddleware(name[string], dirname[__dirname|string], options[{}])`
 
-divvy.createMiddleware has the same signature as divvy.createSender.
+bestow.createMiddleware has the same signature as bestow.createSender.
 
 The only difference is the createMiddleware function creates a function that is compatible
 with express, or any middle ware using object that sends request, response, and next variables to middleware.
@@ -170,14 +170,14 @@ with express, or any middle ware using object that sends request, response, and 
 
 ```
 if(usingNode){
-    var divvy = require('divvy');
+    var bestow = require('bestow');
 }
 
 var myModule = {};
 
 if(usingNode){
     //A new sender is created.
-    myModule.middleware = divvy.createMiddleware('mymodule.js', __dirname);
+    myModule.middleware = bestow.createMiddleware('mymodule.js', __dirname);
     module.exports = myModule;
 }
 ```
