@@ -46,7 +46,7 @@ You can just use the bestow methods to make a script work browser side, but ther
 
 Wrap your whole script in a self invoking function that looks like this.
 
-```
+```javascript
 (function(_global){
 "use strict";
 /*My code here*/
@@ -59,7 +59,7 @@ Use `"use strict";` in your self invoking function if you like what it provides.
 
 You're going to want to export, and send your code to the browser so you want to do this. **bestow does nothing to help your objects be exposed to the environment so you have to do this yourself. bestow is for making modules static.**
 
-```
+```javascript
 (function(_global){
 "use strict";
 if(typeof module !== 'undefined' && module.exports){
@@ -80,7 +80,7 @@ if(bestow.running === 'node'){
 
 `bestow.running` is redundant because of the first module check, and you'd have to send bestow to the browser to use it so you can just use your own check.
 
-```
+```javascript
 (function(_global, usingNode){
 "use strict";
 if(usingNode){
@@ -110,7 +110,7 @@ created by a node server.
 
 ###Creating a sender
 
-```
+```javascript
 if(usingNode){
     var bestow = require('bestow');
 }
@@ -126,7 +126,7 @@ if(usingNode){
 
 ###Using the sender
 
-```
+```javascript
 var http = require('http'),
     mymodule = require('mymodule.js');
 
@@ -146,7 +146,7 @@ server.listen(8080);
 
 In your html file.
 
-```
+```html
 <!DOCTYPE html>
 <html>
 <head>
@@ -171,7 +171,7 @@ with express, or any middle ware using object that sends request, response, and 
 
 ### Create Middleware
 
-```
+```javascript
 if(usingNode){
     var bestow = require('bestow');
 }
@@ -187,7 +187,7 @@ if(usingNode){
 
 ### Use Middleware
 
-```
+```javascript
 var express = require('express')
     mymodule = require('mymodule.js');
 
@@ -203,7 +203,7 @@ app.get('apath', function(req, res){
 
 In your html file.
 
-```
+```html
 <!DOCTYPE html>
 <html>
 <head>
