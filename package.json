@@ -2,7 +2,7 @@
     "name": "bestow",
     "author": "Quentin Engles",
     "description": "Makes modules available to the browser.",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "dependencies": {
         "node-mime": "1.x"
     },
